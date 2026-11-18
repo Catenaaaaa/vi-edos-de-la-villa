@@ -184,6 +184,28 @@
   .keys button.clr{background:#ffffff26;color:var(--gold2)}
   details.calcwrap summary{cursor:pointer;font-weight:700;color:var(--muted);font-size:12px;margin-top:14px;letter-spacing:.06em;text-transform:uppercase}
 
+  /* fotos de producto */
+  .tile .ph{height:96px;display:flex;align-items:flex-end;justify-content:center;border-radius:10px;margin-bottom:2px;
+    background:radial-gradient(ellipse at 50% 100%,var(--paper2) 0 45%,transparent 70%)}
+  .tile .ph svg{height:92px;width:auto;filter:drop-shadow(0 4px 4px #4a0d2026)}
+  .tile .ph img{height:96px;width:100%;object-fit:contain;border-radius:8px}
+  .thumb{width:34px;height:34px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:8px;background:var(--paper2);border-radius:8px;overflow:hidden}
+  .thumb svg{height:30px;width:auto}.thumb img{width:100%;height:100%;object-fit:cover}
+  .foto-edit{display:flex;gap:14px;align-items:center;margin-top:4px}
+  .foto-prev{width:92px;height:110px;flex:0 0 auto;border:1.5px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden}
+  .foto-prev svg{height:96px;width:auto}.foto-prev img{width:100%;height:100%;object-fit:contain}
+
+  /* importador */
+  .modal{position:fixed;inset:0;background:#2b1a1fb3;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal[hidden]{display:none}
+  .modal-box{background:var(--card);border-radius:18px;padding:22px;width:min(920px,100%);max-height:92vh;overflow:auto;box-shadow:0 30px 60px -20px #000a}
+  .modal-box h3{font-family:var(--display);font-size:22px;margin:0 0 6px}
+  .imp-stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+  .imp-stats span{border-radius:99px;padding:5px 12px;font-weight:700;font-size:12px}
+  .drop{border:2px dashed var(--gold);border-radius:14px;padding:18px;text-align:center;background:#fffdf7;cursor:pointer;transition:background .15s}
+  .drop:hover,.drop.over{background:#f6ead0}
+  .drop b{font-family:var(--display);font-size:17px;display:block;margin-bottom:4px}
+
   /* reportes */
   .kpi{position:relative;overflow:hidden}
   .kpi .k{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700}
@@ -376,6 +398,18 @@
       <label for="p_cat">Sector / categoría</label>
       <input id="p_cat" placeholder="Ej: Tintos" list="listaCats">
       <datalist id="listaCats"></datalist>
+      <label>Foto</label>
+      <div class="foto-edit">
+        <div class="foto-prev" id="p_fotoPrev"></div>
+        <div>
+          <div class="row" style="gap:6px">
+            <button type="button" class="btn sec sm fix" id="btnFoto">Subir foto</button>
+            <button type="button" class="btn sec sm fix" id="btnQuitarFoto">Usar ilustración</button>
+          </div>
+          <input type="file" id="p_foto" accept="image/*" hidden>
+          <div class="hint">Sin foto se muestra una ilustración según el sector. Las fotos se achican solas para no ocupar espacio.</div>
+        </div>
+      </div>
       <div class="row">
         <div><label for="p_costo">Precio costo</label><input id="p_costo" type="text" inputmode="decimal" value="0"></div>
         <div><label for="p_venta">Precio venta</label><input id="p_venta" type="text" inputmode="decimal" value="0"></div>
@@ -482,6 +516,19 @@
 
 <!-- ============ 06 DATOS ============ -->
 <section class="tab" id="tab-datos">
+  <div class="card" style="margin-bottom:18px">
+    <div class="toolbar">
+      <h3>Importar productos desde Excel <span class="tag">.XLSX · .XLS · .CSV</span></h3>
+      <button class="btn sec sm" id="btnPlantilla">Descargar plantilla</button>
+    </div>
+    <div class="drop" id="dropImp">
+      <b>Soltá acá el archivo o tocá para elegirlo</b>
+      <span class="hint">Columnas que reconoce: código, nombre, sector, precio costo, precio venta, stock, stock mínimo. El orden no importa.</span>
+    </div>
+    <input type="file" id="fileImp" accept=".xlsx,.xls,.csv,.txt" hidden>
+    <p class="hint">Antes de guardar vas a ver una vista previa. Los productos que ya existen (mismo código o mismo nombre) se actualizan y los nuevos se agregan. No se borra nada.</p>
+    <div class="msg" id="msgImp"></div>
+  </div>
   <div class="grid g2">
     <div class="card">
       <h3>Backup y exportación</h3>
@@ -500,7 +547,7 @@
     <div class="card">
       <h3>Herramientas</h3>
       <div class="row">
-        <button class="btn sec" id="btnEjemplo">Cargar datos de ejemplo</button>
+        <button class="btn sec" id="btnEjemplo">Cargar datos simulados</button>
         <button class="btn danger" id="btnBorrar">Borrar todo</button>
       </div>
       <p class="hint" style="margin-top:14px">
@@ -532,6 +579,29 @@
 </main>
 </div><!-- /content -->
 </div><!-- /app -->
+
+<!-- ======== VISTA PREVIA DEL IMPORTADOR ======== -->
+<div class="modal no-print" id="impModal" hidden>
+  <div class="modal-box" role="dialog" aria-labelledby="impTitulo">
+    <h3 id="impTitulo">Vista previa de la importación</h3>
+    <div class="hint" id="impArchivo"></div>
+    <div class="imp-stats" id="impStats"></div>
+    <div class="scroll" style="max-height:48vh">
+      <table id="impTabla">
+        <thead><tr><th>Fila</th><th>Acción</th><th>Código</th><th>Producto</th><th>Sector</th><th class="num">Costo</th><th class="num">Venta</th><th class="num">Stock</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <label style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin-top:14px">
+      <input type="checkbox" id="impStock" checked style="width:auto;margin-right:6px;vertical-align:middle">
+      Si la planilla trae stock, usarlo como <b>stock actual</b> de los productos que ya existen
+    </label>
+    <div class="row" style="margin-top:16px;justify-content:flex-end">
+      <button class="btn sec fix" id="impCancelar">Cancelar</button>
+      <button class="btn ok fix" id="impConfirmar">Importar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ======== TECLADO VIRTUAL SEGURO (sin teclado fisico / kiosko) ======== -->
 <div id="vk" class="vk no-print" role="dialog" aria-label="Teclado en pantalla">
@@ -592,6 +662,94 @@ function colorSector(cat){
   let h=0; for(const ch of c) h=(h*31+ch.charCodeAt(0))>>>0;
   return PALETA_EXTRA[h%PALETA_EXTRA.length];
 }
+/* ======== FOTOS: ilustración simulada según el sector (o foto subida) ======== */
+function tipoEnvase(cat,nombre){
+  const t=((cat||'')+' '+(nombre||'')).toLowerCase();
+  if(/cervez|birra|lata/.test(t)) return 'lata';
+  if(/espum|champ|extra brut|nature/.test(t)) return 'espumante';
+  if(/aperit|vermu|rosso|bitter/.test(t)) return 'aperitivo';
+  if(/destil|whisk|gin|vodka|ron |ron$|fernet|licor|grappa/.test(t)) return 'destilado';
+  if(/sin alcohol|bebida|agua|gaseosa|soda|t[oó]nica|jugo/.test(t)) return 'pet';
+  if(/accesor|regalo|estuche|copa|sacacorch/.test(t)) return 'caja';
+  if(/almac|picada|snack|man[ií]|papas|salame|queso|hielo/.test(t)) return 'bolsa';
+  return 'vino';
+}
+function iniciales(nombre){
+  const w=String(nombre||'').replace(/[0-9.,]+\s*(ml|l|g|kg|cc)?/gi,' ').split(/\s+/).filter(x=>x.length>2);
+  return ((w[0]||'?')[0]+((w[1]||'')[0]||'')).toUpperCase();
+}
+function fotoSim(cat,nombre){
+  const lab=colorSector(cat), ini=esc(iniciales(nombre)), t=(cat||'').toLowerCase()+' '+(nombre||'').toLowerCase();
+  const txt=(y,c,s)=>`<text x="30" y="${y}" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="${s||9}" fill="${c||'#fff'}">${ini}</text>`;
+  const brillo='<rect x="19" y="46" width="3" height="42" rx="1.5" fill="#fff" opacity=".22"/>';
+  let svg='';
+  switch(tipoEnvase(cat,nombre)){
+    case 'vino': {
+      const vidrio=/blanc|torront|chardon|sauvig/.test(t)?'#8ea65a':/rosad/.test(t)?'#e9a3b4':'#22301c';
+      svg=`<path d="M26 4h8v24c0 6 10 9 10 18v46a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V46c0-9 10-12 10-18z" fill="${vidrio}"/>
+        <rect x="25.5" y="3" width="9" height="13" rx="1.5" fill="${lab}"/>${brillo}
+        <rect x="16" y="56" width="28" height="26" fill="#f7efe0"/><rect x="16" y="56" width="28" height="5" fill="${lab}"/>${txt(76,lab)}`;
+      break; }
+    case 'espumante':
+      svg=`<path d="M26 4h8v22c0 7 10 10 10 20v46a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V46c0-10 10-13 10-20z" fill="#2c3b20"/>
+        <path d="M24.5 2h11v20c0 3-11 3-11 0z" fill="#d4b25a"/>${brillo}
+        <rect x="16" y="58" width="28" height="22" fill="#f7efe0"/><rect x="16" y="76" width="28" height="4" fill="#d4b25a"/>${txt(73,lab)}`;
+      break;
+    case 'destilado':
+      svg=`<path d="M25 6h10v12c0 4 11 4 11 12v60a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V30c0-8 11-8 11-12z" fill="#b5762a" opacity=".92"/>
+        <rect x="24" y="3" width="12" height="9" rx="2" fill="#2b1a1f"/><rect x="18" y="36" width="3" height="50" rx="1.5" fill="#fff" opacity=".25"/>
+        <rect x="14" y="50" width="32" height="26" fill="#2b1a1f"/><rect x="16" y="52" width="28" height="22" fill="none" stroke="#d4b25a" stroke-width="1"/>${txt(67,'#e8cf8f',10)}`;
+      break;
+    case 'aperitivo':
+      svg=`<path d="M26 4h8v20c0 6 11 8 11 18v50a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4V42c0-10 11-12 11-18z" fill="#9c2a1e"/>
+        <rect x="25.5" y="3" width="9" height="10" rx="1.5" fill="#d4b25a"/>${brillo}
+        <ellipse cx="30" cy="66" rx="13" ry="12" fill="#f7efe0"/>${txt(69,lab)}`;
+      break;
+    case 'lata':
+      svg=`<rect x="15" y="16" width="30" height="78" rx="6" fill="${lab}"/><ellipse cx="30" cy="17" rx="15" ry="4" fill="#d9d4cc"/>
+        <ellipse cx="30" cy="16" rx="11" ry="2.5" fill="#bdb6ab"/><rect x="15" y="44" width="30" height="24" fill="#f7efe0"/>
+        <rect x="19" y="22" width="3" height="66" rx="1.5" fill="#fff" opacity=".25"/>${txt(61,lab,10)}`;
+      break;
+    case 'pet':
+      svg=`<path d="M26 6h8v8c0 4 10 6 10 14v8c-2 2-2 4 0 6v46a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V42c2-2 2-4 0-6v-8c0-8 10-10 10-14z" fill="#9fd0dc" opacity=".85"/>
+        <rect x="25" y="3" width="10" height="7" rx="1.5" fill="${lab}"/><rect x="16" y="54" width="28" height="18" fill="${lab}"/>${txt(66)}
+        <rect x="20" y="30" width="3" height="56" rx="1.5" fill="#fff" opacity=".4"/>`;
+      break;
+    case 'caja':
+      svg=`<rect x="8" y="40" width="44" height="52" rx="3" fill="${lab}"/><rect x="5" y="32" width="50" height="12" rx="2" fill="${lab}" opacity=".85"/>
+        <rect x="27" y="32" width="6" height="60" fill="#d4b25a"/><path d="M30 32c-8-14-20-6-10 0zM30 32c8-14 20-6 10 0z" fill="none" stroke="#d4b25a" stroke-width="3"/>
+        ${txt(74,'#fff',10).replace('x="30"','x="17"')}`;
+      break;
+    default: // bolsa
+      svg=`<path d="M12 24c0-6 36-6 36 0l3 64c0 6-42 6-42 0z" fill="${lab}"/><path d="M12 24c0-6 36-6 36 0" fill="none" stroke="#00000033" stroke-width="3"/>
+        <ellipse cx="30" cy="60" rx="13" ry="13" fill="#f7efe0"/>${txt(64,lab,10)}<rect x="16" y="30" width="3" height="54" rx="1.5" fill="#fff" opacity=".2"/>`;
+  }
+  return `<svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${svg}</svg>`;
+}
+function fotoHTML(p){
+  if(p && p.foto && /^data:image\//.test(p.foto)) return `<img src="${p.foto}" alt="">`;
+  return fotoSim(p&&p.categoria, p&&p.nombre);
+}
+/* achica la imagen a 260px máx. para que entre en el navegador */
+function leerFoto(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error('lectura'));
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error('imagen'));
+      img.onload=()=>{
+        const k=Math.min(1,260/Math.max(img.width,img.height));
+        const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+        const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',.8));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
 function categorias(){
   const m=new Map();
   DB.productos.forEach(p=>{ const c=(p.categoria||'Otros').trim()||'Otros'; m.set(c,(m.get(c)||0)+1); });
@@ -703,7 +861,7 @@ function renderBusqueda(){
   prods.sort((a,b)=>a.nombre.localeCompare(b.nombre));
   prods=prods.slice(0,120);
   if(prods.length===0){
-    box.innerHTML='<div class="hint" style="padding:10px;grid-column:1/-1">'+(DB.productos.length?'Nada coincide con la búsqueda.':'Todavía no hay productos. Cargalos en el sector <b>Cava</b> o probá con los datos de ejemplo en <b>Datos</b>.')+'</div>';
+    box.innerHTML='<div class="hint" style="padding:10px;grid-column:1/-1">'+(DB.productos.length?'Nada coincide con la búsqueda.':'Todavía no hay productos. Cargalos en <b>Cava</b>, importá tu Excel en <b>Datos</b> o <button class="btn sm gold" onclick="document.getElementById(\'btnEjemplo\').click()">cargá datos simulados</button>')+'</div>';
     return;
   }
   box.innerHTML=prods.map(p=>{
@@ -711,6 +869,7 @@ function renderBusqueda(){
     const s=stockDe(p.id)-enCarr, min=Number(p.stockMinimo)||0;
     return `<button class="tile${s<=0?' out':''}" data-id="${p.id}" style="--sc:${colorSector(p.categoria)}">
       <span class="st${s<=min?' low':''}">${s} u.</span>
+      <span class="ph">${fotoHTML(p)}</span>
       <span class="cat">${esc(p.categoria||'Otros')}</span>
       <span class="nm">${esc(p.nombre)}</span>
       <span class="pr">${fmt(p.precioVenta)}</span>
@@ -930,8 +1089,21 @@ function limpiarFormProd(){
   ['p_costo','p_venta','p_stock','p_min'].forEach(id=>document.getElementById(id).value='0');
   document.getElementById('formTitle').textContent='Nuevo producto';
   document.getElementById('p_stock').disabled=false;
+  fotoForm=''; prevFoto();
   limpiarMsg('msgProd'); margen();
 }
+let fotoForm='';
+function prevFoto(){
+  document.getElementById('p_fotoPrev').innerHTML=fotoHTML({foto:fotoForm,categoria:document.getElementById('p_cat').value,nombre:document.getElementById('p_nombre').value||'?'});
+}
+['p_cat','p_nombre'].forEach(id=>document.getElementById(id).addEventListener('input',prevFoto));
+document.getElementById('btnFoto').addEventListener('click',()=>document.getElementById('p_foto').click());
+document.getElementById('btnQuitarFoto').addEventListener('click',()=>{ fotoForm=''; prevFoto(); });
+document.getElementById('p_foto').addEventListener('change',async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{ fotoForm=await leerFoto(f); prevFoto(); }
+  catch(err){ msg('msgProd','No se pudo leer esa imagen. Probá con un JPG o PNG.','err'); }
+});
 function margen(){
   const c=numVal('p_costo'), v=numVal('p_venta');
   document.getElementById('margenHint').textContent = (c>0&&v>0) ? 'Margen: '+fmt(v-c)+' por unidad ('+Math.round((v-c)/c*100)+'% sobre costo)' : '';
@@ -949,7 +1121,8 @@ document.getElementById('btnGuardarProd').addEventListener('click',()=>{
     precioCosto:numVal('p_costo'),
     precioVenta:numVal('p_venta'),
     stockInicial:numVal('p_stock'),
-    stockMinimo:numVal('p_min')
+    stockMinimo:numVal('p_min'),
+    foto:fotoForm||''
   };
   if(editandoId){
     const p=getProducto(editandoId); Object.assign(p,datos);
@@ -974,6 +1147,7 @@ function editarProducto(id){
   document.getElementById('p_stock').value=p.stockInicial||0;
   document.getElementById('p_min').value=p.stockMinimo||0;
   document.getElementById('formTitle').textContent='Editar: '+p.nombre;
+  fotoForm=p.foto||''; prevFoto();
   limpiarMsg('msgProd'); margen();
   window.scrollTo(0,0);
 }
@@ -990,7 +1164,7 @@ function renderProductos(){
   const tb=document.querySelector('#tablaProductos tbody');
   const prods=DB.productos.slice().sort((a,b)=>(a.categoria||'').localeCompare(b.categoria||'')||a.nombre.localeCompare(b.nombre));
   tb.innerHTML = prods.length ? prods.map(p=>`<tr>
-    <td class="mono">${esc(p.codigo||'—')}</td><td><b>${esc(p.nombre)}</b></td>
+    <td class="mono">${esc(p.codigo||'—')}</td><td><div style="display:flex;align-items:center"><span class="thumb no-print">${fotoHTML(p)}</span><b>${esc(p.nombre)}</b></div></td>
     <td><span class="dot-cat" style="background:${colorSector(p.categoria)}"></span>${esc(p.categoria||'')}</td>
     <td class="num mono">${fmt(p.precioCosto)}</td><td class="num mono" style="font-weight:700">${fmt(p.precioVenta)}</td>
     <td class="num">${stockDe(p.id)}</td>
@@ -1140,10 +1314,190 @@ document.getElementById('fileJson').addEventListener('change',e=>{
   r.readAsText(f); e.target.value='';
 });
 document.getElementById('btnExportCsv').addEventListener('click',()=>{
-  const rows=[['codigo','nombre','sector','precio_costo','precio_venta','stock_inicial','stock_minimo','stock_actual']];
-  DB.productos.forEach(p=>rows.push([p.codigo,p.nombre,p.categoria,p.precioCosto,p.precioVenta,p.stockInicial,p.stockMinimo,stockDe(p.id)]));
-  descargar('productos-'+hoy()+'.csv','﻿'+rows.map(r=>r.map(csvEscape).join(';')).join('\n'),'text/csv');
+  /* mismas columnas que la plantilla: se puede editar en Excel y volver a importar */
+  const rows=[COLS_PLANTILLA];
+  DB.productos.forEach(p=>rows.push([p.codigo,p.nombre,p.categoria,numCSV(p.precioCosto),numCSV(p.precioVenta),stockDe(p.id),p.stockMinimo]));
+  descargar('productos-'+hoy()+'.csv','﻿'+rows.map(r=>r.map(csvEscape).join(';')).join('\r\n'),'text/csv');
 });
+
+/* ======== IMPORTAR PRODUCTOS (Excel / CSV) ======== */
+const COLS_PLANTILLA=['codigo','nombre','sector','precio_costo','precio_venta','stock','stock_minimo'];
+function numCSV(n){ return String(Number(n)||0).replace('.',','); }
+document.getElementById('btnPlantilla').addEventListener('click',()=>{
+  const rows=[COLS_PLANTILLA,
+    ['7790000000011','Malbec Reserva 750 ml','Tintos','6500','10900','18','6'],
+    ['','Torrontés 750 ml','Blancos','4800','7900','12','5'],
+    ['7790000000080','Fernet 750 ml','Destilados','9800','14500','20','8']];
+  descargar('plantilla-productos-vinedos.csv','﻿'+rows.map(r=>r.map(csvEscape).join(';')).join('\r\n'),'text/csv');
+});
+function normHeader(h){ return String(h==null?'':h).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); }
+const ALIAS={
+  codigo:['codigo','codigodebarras','codbarras','codigobarras','ean','barcode','sku','cod'],
+  nombre:['nombre','producto','descripcion','articulo','detalle','nombreproducto'],
+  categoria:['sector','categoria','rubro','tipo','familia','seccion'],
+  costo:['preciocosto','costo','preciodecosto','costounitario','compra','preciocompra'],
+  venta:['precioventa','venta','preciodeventa','precio','pvp','preciopublico','preciofinal'],
+  stock:['stockactual','stock','existencia','existencias','cantidad','stockinicial'],
+  minimo:['stockminimo','minimo','min','stockmin','alerta']
+};
+function mapearColumnas(fila){
+  const hs=fila.map(normHeader), m={};
+  for(const campo in ALIAS){ for(const a of ALIAS[campo]){ const i=hs.indexOf(a); if(i>=0 && !Object.values(m).includes(i)){ m[campo]=i; break; } } }
+  return m;
+}
+function parseNum(v){
+  if(typeof v==='number') return isFinite(v)?v:null;
+  let s=String(v==null?'':v).replace(/[$\s]/g,'').replace(/ars/i,'');
+  if(!s) return null;
+  if(s.includes(',')&&s.includes('.')) s = s.lastIndexOf(',')>s.lastIndexOf('.') ? s.replace(/\./g,'').replace(',','.') : s.replace(/,/g,'');
+  else if(s.includes(',')) s=s.replace(',','.');
+  else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,'');
+  const n=parseFloat(s); return isNaN(n)?null:n;
+}
+function celdaTxt(v){
+  if(typeof v==='number') return Number.isInteger(v)?String(v):String(v);
+  return String(v==null?'':v).trim();
+}
+function parseCSV(text){
+  text=text.replace(/^﻿/,'');
+  const primera=text.split(/\r?\n/)[0]||'';
+  const delim=[';',',','\t'].map(d=>[d,primera.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const filas=[]; let fila=[], campo='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){ campo+='"'; i++; } else q=false; }
+      else campo+=c;
+    }else if(c==='"') q=true;
+    else if(c===delim){ fila.push(campo); campo=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; fila.push(campo); filas.push(fila); fila=[]; campo=''; }
+    else campo+=c;
+  }
+  if(campo!==''||fila.length){ fila.push(campo); filas.push(fila); }
+  return filas;
+}
+let XLSX_PROMESA=null;
+function cargarXLSX(){
+  if(window.XLSX) return Promise.resolve();
+  if(!XLSX_PROMESA) XLSX_PROMESA=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res; s.onerror=()=>{ XLSX_PROMESA=null; rej(new Error('red')); };
+    document.head.appendChild(s);
+  });
+  return XLSX_PROMESA;
+}
+async function leerPlanilla(file){
+  const nombre=file.name.toLowerCase();
+  if(/\.(xlsx|xls|xlsm|ods)$/.test(nombre)){
+    try{ await cargarXLSX(); }
+    catch(e){ throw new Error('Para leer archivos de Excel hace falta internet la primera vez. Sin conexión, guardá la planilla como CSV (Archivo → Guardar como → CSV) e importala así.'); }
+    const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+  }
+  return parseCSV(await file.text());
+}
+let IMP=null;
+function analizarFilas(filas){
+  /* busca la fila de encabezados entre las primeras 10 */
+  let hi=-1, cols=null;
+  for(let i=0;i<Math.min(10,filas.length);i++){
+    const m=mapearColumnas(filas[i]);
+    if(Object.keys(m).length>=2 && ('nombre' in m || 'codigo' in m)){ hi=i; cols=m; break; }
+  }
+  if(hi<0) throw new Error('No encontré los encabezados. La primera fila tiene que decir, por ejemplo: código, nombre, sector, precio venta… (bajá la plantilla para ver el formato).');
+  const items=[], vistos=new Set();
+  for(let i=hi+1;i<filas.length;i++){
+    const f=filas[i]; if(!f || f.every(c=>celdaTxt(c)==='')) continue;
+    const get=k=>k in cols ? f[cols[k]] : '';
+    const it={
+      fila:i+1,
+      codigo:limpiarCodigo(celdaTxt(get('codigo'))),
+      nombre:celdaTxt(get('nombre')),
+      categoria:celdaTxt(get('categoria')),
+      costo:parseNum(get('costo')), venta:parseNum(get('venta')),
+      stock:parseNum(get('stock')), minimo:parseNum(get('minimo'))
+    };
+    let p=it.codigo ? buscarPorCodigo(it.codigo) : null;
+    if(!p && it.nombre) p=DB.productos.find(x=>x.nombre.trim().toLowerCase()===it.nombre.toLowerCase());
+    const clave=it.codigo||('n:'+it.nombre.toLowerCase());
+    if(!it.nombre && !p){ it.accion='error'; it.motivo='falta el nombre'; }
+    else if(vistos.has(clave)){ it.accion='error'; it.motivo='repetido en el archivo'; }
+    else if(it.codigo && p && it.nombre && p.nombre.trim().toLowerCase()!==it.nombre.toLowerCase() && limpiarCodigo(p.codigo)!==it.codigo){ it.accion='error'; it.motivo='nombre ya usado con otro código'; }
+    else { it.accion=p?'actualiza':'nuevo'; it.prod=p; }
+    vistos.add(clave);
+    items.push(it);
+  }
+  return {items, cols};
+}
+function abrirImport(nombreArchivo,res){
+  IMP=res;
+  const n={nuevo:0,actualiza:0,error:0}; res.items.forEach(i=>n[i.accion]++);
+  const faltan=['codigo','nombre','categoria','costo','venta','stock','minimo'].filter(k=>!(k in res.cols));
+  const nombresCol={codigo:'código',nombre:'nombre',categoria:'sector',costo:'precio costo',venta:'precio venta',stock:'stock',minimo:'stock mínimo'};
+  document.getElementById('impArchivo').textContent=nombreArchivo+' · '+res.items.length+' filas'+(faltan.length?' · columnas que no vinieron (se dejan como están): '+faltan.map(k=>nombresCol[k]).join(', '):'');
+  document.getElementById('impStats').innerHTML=
+    `<span style="background:#e2ebcf;color:var(--vine2)">${n.nuevo} ${n.nuevo===1?'nuevo':'nuevos'}</span>`+
+    `<span style="background:#f6ead0;color:#7a5a12">${n.actualiza} ${n.actualiza===1?'se actualiza':'se actualizan'}</span>`+
+    (n.error?`<span style="background:#f8d7d3;color:var(--bad)">${n.error} con error (se saltean)</span>`:'');
+  const v=x=>x==null?'<span class="hint">—</span>':fmt(x);
+  document.querySelector('#impTabla tbody').innerHTML=res.items.map(i=>`<tr style="${i.accion==='error'?'opacity:.6':''}">
+    <td class="mono">${i.fila}</td>
+    <td>${i.accion==='nuevo'?'<span class="pill ok">Nuevo</span>':i.accion==='actualiza'?'<span class="pill mid">Actualiza</span>':'<span class="pill low">'+esc(i.motivo)+'</span>'}</td>
+    <td class="mono">${esc(i.codigo||'—')}</td><td><b>${esc(i.nombre||(i.prod?i.prod.nombre:''))}</b></td>
+    <td>${i.categoria?'<span class="dot-cat" style="background:'+colorSector(i.categoria)+'"></span>'+esc(i.categoria):'<span class="hint">—</span>'}</td>
+    <td class="num mono">${v(i.costo)}</td><td class="num mono">${v(i.venta)}</td><td class="num">${i.stock==null?'<span class="hint">—</span>':i.stock}</td></tr>`).join('');
+  document.getElementById('impConfirmar').disabled=!(n.nuevo+n.actualiza);
+  document.getElementById('impConfirmar').textContent='Importar '+(n.nuevo+n.actualiza)+' productos';
+  document.getElementById('impModal').hidden=false;
+}
+function cerrarImport(){ document.getElementById('impModal').hidden=true; IMP=null; }
+document.getElementById('impCancelar').addEventListener('click',cerrarImport);
+document.getElementById('impModal').addEventListener('click',e=>{ if(e.target.id==='impModal') cerrarImport(); });
+document.getElementById('impConfirmar').addEventListener('click',()=>{
+  if(!IMP) return;
+  const usarStock=document.getElementById('impStock').checked;
+  let nuevos=0, act=0;
+  for(const i of IMP.items){
+    if(i.accion==='nuevo'){
+      DB.productos.push({id:uid(),codigo:i.codigo,nombre:i.nombre,categoria:i.categoria,
+        precioCosto:i.costo||0,precioVenta:i.venta||0,stockInicial:i.stock||0,stockMinimo:i.minimo||0,foto:''});
+      nuevos++;
+    }else if(i.accion==='actualiza'){
+      const p=getProducto(i.prod.id); if(!p) continue;
+      if(i.codigo) p.codigo=i.codigo;
+      if(i.nombre) p.nombre=i.nombre;
+      if(i.categoria) p.categoria=i.categoria;
+      if(i.costo!=null) p.precioCosto=i.costo;
+      if(i.venta!=null) p.precioVenta=i.venta;
+      if(i.minimo!=null) p.stockMinimo=i.minimo;
+      /* el stock de la planilla es el stock actual: ajustamos el inicial para que el cálculo dé ese número */
+      if(usarStock && i.stock!=null) p.stockInicial=i.stock-(compradoDe(p.id)-vendidoDe(p.id));
+      carrito.forEach(c=>{ if(c.productoId===p.id){ c.nombre=p.nombre; c.precio=p.precioVenta; c.costo=p.precioCosto; } });
+      act++;
+    }
+  }
+  save(); cerrarImport(); renderAll();
+  msg('msgImp','Listo: '+nuevos+(nuevos===1?' producto nuevo':' productos nuevos')+' y '+act+(act===1?' actualizado.':' actualizados.'),'good');
+});
+async function importarArchivo(file){
+  if(!file) return;
+  limpiarMsg('msgImp');
+  try{
+    const filas=await leerPlanilla(file);
+    const res=analizarFilas(filas);
+    if(!res.items.length) throw new Error('El archivo no tiene productos debajo de los encabezados.');
+    abrirImport(file.name,res);
+  }catch(err){ msg('msgImp',err.message||'No se pudo leer el archivo.','err'); }
+}
+const dropImp=document.getElementById('dropImp');
+dropImp.addEventListener('click',()=>document.getElementById('fileImp').click());
+document.getElementById('fileImp').addEventListener('change',e=>{ const f=e.target.files[0]; e.target.value=''; importarArchivo(f); });
+['dragenter','dragover'].forEach(ev=>dropImp.addEventListener(ev,e=>{ e.preventDefault(); dropImp.classList.add('over'); }));
+['dragleave','drop'].forEach(ev=>dropImp.addEventListener(ev,e=>{ e.preventDefault(); dropImp.classList.remove('over'); }));
+dropImp.addEventListener('drop',e=>importarArchivo(e.dataTransfer.files[0]));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !document.getElementById('impModal').hidden) cerrarImport(); });
 document.getElementById('btnExportMov').addEventListener('click',()=>{
   const rows=[['tipo','fecha','producto','cantidad','precio_unitario','costo_unitario','total','proveedor']];
   DB.movimientos.forEach(m=>m.items.forEach(it=>{
@@ -1155,24 +1509,73 @@ document.getElementById('btnExportMov').addEventListener('click',()=>{
 document.getElementById('btnEjemplo').addEventListener('click',()=>{
   if(DB.productos.length && !confirm('Ya hay datos. ¿Reemplazar todo por los ejemplos?')) return;
   const P=(codigo,nombre,categoria,precioCosto,precioVenta,stockInicial,stockMinimo)=>({id:uid(),codigo,nombre,categoria,precioCosto,precioVenta,stockInicial,stockMinimo});
-  DB={productos:[
-    P('7790000000011','Malbec Reserva 750 ml','Tintos',6500,10900,18,6),
-    P('7790000000028','Cabernet Franc 750 ml','Tintos',7800,12900,10,4),
-    P('7790000000035','Blend de Altura 750 ml','Tintos',11500,18500,6,3),
-    P('7790000000042','Torrontés 750 ml','Blancos',4800,7900,12,5),
-    P('7790000000059','Chardonnay 750 ml','Blancos',6200,9900,8,4),
-    P('7790000000066','Rosado de Malbec 750 ml','Rosados',5200,8500,9,4),
-    P('7790000000073','Espumante Extra Brut 750 ml','Espumantes',7200,11900,12,6),
-    P('7790000000080','Fernet 750 ml','Destilados',9800,14500,20,8),
-    P('7790000000097','Gin London Dry 700 ml','Destilados',14500,21900,5,3),
-    P('7790000000103','Aperitivo Rosso 950 ml','Aperitivos',5600,8900,7,3),
-    P('7790000000110','Cerveza IPA lata 473 ml','Cervezas',1700,2900,48,24),
-    P('7790000000127','Agua tónica 1,5 L','Sin alcohol',1500,2600,14,6),
-    P('7790000000134','Hielo 2 kg','Almacén',900,1800,10,5),
-    P('7790000000141','Maní salado 200 g','Almacén',1100,2100,3,5)
-  ],movimientos:[]};
+  /* catálogo SIMULADO (nombres genéricos y precios inventados) hasta tener el real */
+  const productos=[
+    P('7790000000011','Malbec Reserva 750 ml','Tintos',6500,10900,30,6),
+    P('7790000000158','Malbec Joven 750 ml','Tintos',3900,6500,36,10),
+    P('7790000000165','Malbec Gran Reserva 750 ml','Tintos',13800,22500,10,3),
+    P('7790000000028','Cabernet Franc 750 ml','Tintos',7800,12900,14,4),
+    P('7790000000172','Cabernet Sauvignon 750 ml','Tintos',6900,11500,14,4),
+    P('7790000000189','Bonarda 750 ml','Tintos',4600,7600,18,5),
+    P('7790000000196','Pinot Noir 750 ml','Tintos',9200,15200,8,3),
+    P('7790000000035','Blend de Altura 750 ml','Tintos',11500,18500,8,3),
+    P('7790000000042','Torrontés 750 ml','Blancos',4800,7900,16,5),
+    P('7790000000059','Chardonnay 750 ml','Blancos',6200,9900,12,4),
+    P('7790000000202','Sauvignon Blanc 750 ml','Blancos',5900,9500,10,4),
+    P('7790000000066','Rosado de Malbec 750 ml','Rosados',5200,8500,12,4),
+    P('7790000000073','Espumante Extra Brut 750 ml','Espumantes',7200,11900,18,6),
+    P('7790000000219','Espumante Nature 750 ml','Espumantes',10500,16900,8,3),
+    P('7790000000080','Fernet 750 ml','Destilados',9800,14500,30,8),
+    P('7790000000097','Gin London Dry 700 ml','Destilados',14500,21900,9,3),
+    P('7790000000226','Vodka 700 ml','Destilados',7600,11900,10,3),
+    P('7790000000233','Whisky Blend 750 ml','Destilados',16800,25900,6,2),
+    P('7790000000240','Ron Dorado 750 ml','Destilados',10200,15900,6,2),
+    P('7790000000103','Aperitivo Rosso 950 ml','Aperitivos',5600,8900,12,3),
+    P('7790000000257','Vermut Rosso 1 L','Aperitivos',6100,9600,8,3),
+    P('7790000000110','Cerveza IPA lata 473 ml','Cervezas',1700,2900,72,24),
+    P('7790000000264','Cerveza Rubia lata 473 ml','Cervezas',1300,2200,96,24),
+    P('7790000000271','Cerveza Negra 1 L','Cervezas',2600,4300,24,8),
+    P('7790000000127','Agua tónica 1,5 L','Sin alcohol',1500,2600,20,6),
+    P('7790000000288','Gaseosa cola 2,25 L','Sin alcohol',2300,3900,24,8),
+    P('7790000000295','Agua sin gas 2 L','Sin alcohol',900,1700,24,8),
+    P('7790000000134','Hielo 2 kg','Almacén',900,1800,20,5),
+    P('7790000000141','Maní salado 200 g','Almacén',1100,2100,8,6),
+    P('7790000000301','Papas fritas 150 g','Almacén',1500,2700,14,6),
+    P('7790000000318','Salame picado fino 200 g','Almacén',3200,5400,8,3),
+    P('7790000000325','Copa de cristal','Accesorios',2800,4900,12,4),
+    P('7790000000332','Sacacorchos de mozo','Accesorios',3500,6500,6,2),
+    P('7790000000349','Estuche regalo 1 botella','Regalos',2200,4200,10,3)
+  ];
+  DB={productos, movimientos:[]};
+  /* ventas simuladas de los últimos 10 días, para que "Números" muestre algo */
+  const pesos=productos.map(p=>/cerveza|fernet|hielo|malbec|cola/i.test(p.nombre)?5:/accesor|regalo|whisky|gran/i.test(p.nombre+p.categoria)?1:2);
+  const elegir=()=>{ let r=Math.random()*pesos.reduce((a,b)=>a+b,0); for(let i=0;i<productos.length;i++){ r-=pesos[i]; if(r<0) return productos[i]; } return productos[0]; };
+  for(let d=9; d>=0; d--){
+    const n=4+Math.floor(Math.random()*7);
+    for(let k=0;k<n;k++){
+      const f=new Date(); f.setDate(f.getDate()-d); f.setHours(10+Math.floor(Math.random()*11),Math.floor(Math.random()*60),0,0);
+      if(f>new Date()) continue;
+      const items=[];
+      for(let j=0, m=1+Math.floor(Math.random()*3); j<m; j++){
+        const p=elegir(), cant=/cerveza/i.test(p.nombre)?1+Math.floor(Math.random()*6):1+Math.floor(Math.random()*2);
+        if(items.some(x=>x.productoId===p.id) || stockDe(p.id)<cant) continue;
+        items.push({productoId:p.id,cantidad:cant,precio:p.precioVenta,costo:p.precioCosto});
+      }
+      if(!items.length) continue;
+      const desc=Math.random()<.12?10:0;
+      const total=items.reduce((a,i)=>a+i.precio*i.cantidad,0)*(1-desc/100);
+      const pago=Math.ceil(total/1000)*1000;
+      DB.movimientos.push({id:uid(),tipo:'venta',fecha:f.toISOString(),items,total,pago,vuelto:pago-total,descuento:desc});
+    }
+    if(d===6||d===2){ // dos entradas de mercadería
+      const f=new Date(); f.setDate(f.getDate()-d); f.setHours(9,30,0,0);
+      const p=productos[d===6?0:21], cant=d===6?12:48;
+      DB.movimientos.push({id:uid(),tipo:'compra',fecha:f.toISOString(),items:[{productoId:p.id,cantidad:cant,precio:p.precioCosto,costo:p.precioCosto}],total:cant*p.precioCosto,proveedor:d===6?'Distribuidora Cuyo':'Cervecería del Valle'});
+    }
+  }
+  DB.movimientos.sort((a,b)=>a.fecha.localeCompare(b.fecha));
   sectorActivo='';
-  save(); renderAll(); msg('msgDatos','Datos de ejemplo cargados: 14 productos en 9 sectores.','good');
+  save(); renderAll(); msg('msgDatos','Datos simulados cargados: '+productos.length+' productos y '+DB.movimientos.filter(m=>m.tipo==='venta').length+' ventas de los últimos 10 días.','good');
 });
 document.getElementById('btnBorrar').addEventListener('click',()=>{
   if(!confirm('¿BORRAR TODOS los productos y movimientos? No se puede deshacer.')) return;
@@ -1321,7 +1724,7 @@ document.addEventListener('contextmenu',e=>{
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function renderAll(){ renderSectores(); renderBusqueda(); renderCarrito(); renderProductos(); renderPedidos(); renderStock(); renderReportes(); renderHoy(); }
 document.getElementById('ped_fecha').value=hoy();
-renderAll();
+renderAll(); prevFoto();
 setInterval(renderHoy,60000);
 setTimeout(()=>document.getElementById('codigo').focus(),50);
 </script>

@@ -29,6 +29,6 @@ Lectores USB en modo teclado (escriben el código + Enter). Se detecta la ráfag
 Basado en `~/kiosco.html` (Kiosco POS), que queda sin tocar como plantilla.
 
 ## Pendiente
-- Cargar productos reales y precios de la vinoteca.
+- Cargar productos reales (Datos → Importar productos desde Excel; hoy hay un catálogo simulado).
 - Probar con el lector físico del local.
 - Definir si se quieren medios de pago (efectivo / transferencia / tarjeta) y cierre de caja diario.
