@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Video Viñedos de la Villa</title>
+<style>
+@font-face { font-family: P; font-weight: 500; src: url("file:///home/thiago/.local/share/fonts/Poppins-Medium.ttf"); }
+@font-face { font-family: P; font-weight: 800; src: url("file:///home/thiago/.local/share/fonts/Poppins-ExtraBold.ttf"); }
+:root {
+  --azul: #0055ff; --celeste: #00bfff; --noche: #040b1f; --tinta: #0b1736;
+  --grad: linear-gradient(135deg, #0055ff, #00bfff);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--noche); }
+body { font-family: P, sans-serif; color: #fff; position: relative; }
+.abs { position: absolute; }
+#bg { position: absolute; inset: 0; background: radial-gradient(1200px 900px at 50% 30%, #0a2160 0%, #061033 45%, #040b1f 100%); }
+.blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; }
+#b1 { width: 700px; height: 700px; background: #0055ff; }
+#b2 { width: 640px; height: 640px; background: #8f2443; opacity: .55; }
+#grid { position: absolute; inset: -200px; opacity: .10;
+  background-image: linear-gradient(#7fb6ff 1px, transparent 1px), linear-gradient(90deg, #7fb6ff 1px, transparent 1px);
+  background-size: 90px 90px; }
+.glyph { position: absolute; font: 800 54px P; color: #5aa9ff; opacity: .18; }
+
+.scene { position: absolute; inset: 0; opacity: 0; }
+.kicker { font: 800 34px P; letter-spacing: 6px; text-transform: uppercase; color: var(--celeste); text-align: center; }
+.big { font: 800 112px/1.02 P; text-align: center; letter-spacing: -2px; }
+.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.center-x { left: 0; right: 0; }
+
+
+/* ---- piezas de este video ---- */
+.wine { background: linear-gradient(135deg,#ffd6a0,#e8cf8f 40%,#ff7aa2); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.laptop { width: 1000px; left: 40px; }
+.laptop .scr { border-radius: 30px 30px 8px 8px; background: #0d1530; padding: 18px; box-shadow: 0 40px 120px rgba(0,85,255,.4), inset 0 0 0 3px #26365f; }
+.laptop .scr .in { border-radius: 12px; overflow: hidden; position: relative; aspect-ratio: 16/10; background: #f5ecdd; }
+.laptop .scr img { width: 100%; position: absolute; left: 0; top: 0; }
+.laptop .base { height: 30px; margin: 0 -50px; border-radius: 0 0 40px 40px; background: linear-gradient(#2b3a63,#141f40); }
+.shot { border-radius: 30px; overflow: hidden; background: #fffaf1; box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+.shot img { width: 100%; display: block; }
+.chip { font: 800 40px P; padding: 18px 32px; border-radius: 999px; background: rgba(255,255,255,.1);
+  border: 2px solid rgba(127,182,255,.45); white-space: nowrap; display: flex; align-items: center; gap: 14px; }
+.chip .sw { width: 30px; height: 30px; border-radius: 10px; }
+.badge { font: 800 46px P; padding: 26px 40px; border-radius: 34px; display: flex; gap: 18px; align-items: center; white-space: nowrap;
+  background: linear-gradient(135deg, rgba(0,85,255,.55), rgba(0,191,255,.3)); border: 3px solid #7fd8ff; box-shadow: 0 20px 70px rgba(0,191,255,.35); }
+.bip { font: 800 54px P; padding: 16px 34px; border-radius: 999px; background: #ffd34d; color: #3a2a00; box-shadow: 0 16px 50px rgba(255,211,77,.5); white-space: nowrap; }
+.excel { width: 300px; height: 300px; border-radius: 60px; background: #1f8f4e; display: grid; place-items: center; box-shadow: 0 30px 90px rgba(31,143,78,.55); position: relative; }
+.excel b { font: 800 190px P; color: #fff; line-height: 1; }
+.excel i { position: absolute; inset: 30px; border-radius: 30px; background-image: linear-gradient(#ffffff22 2px, transparent 2px), linear-gradient(90deg,#ffffff22 2px, transparent 2px); background-size: 48px 48px; }
+.cta { font: 800 56px P; padding: 34px 64px; border-radius: 999px; background: linear-gradient(135deg,#8f2443,#c0723f); box-shadow: 0 24px 70px rgba(143,36,67,.6); white-space: nowrap; }
+/* Subtítulos */
+#cap { position: absolute; left: 70px; right: 70px; top: 1250px; height: 300px; display: flex; align-items: center; justify-content: center; }
+#capTxt { font: 800 62px/1.18 P; text-align: center; text-shadow: 0 6px 30px rgba(0,0,0,.65); paint-order: stroke; -webkit-text-stroke: 10px rgba(4,11,31,.55); }
+#capTxt .hl { color: #4fd2ff; }
+
+/* Mascota */
+#cate { position: absolute; left: 0; top: 0; width: 360px; height: 400px; transform-origin: 180px 360px; z-index: 50; }
+#cateName { position: absolute; font: 800 40px P; padding: 12px 30px; border-radius: 999px; background: #fff; color: var(--azul); z-index: 51; white-space: nowrap; }
+
+</style></head><body>
+<div id="bg"><div id="grid"></div><div class="blob" id="b1"></div><div class="blob" id="b2"></div></div>
+<div id="glyphs"></div>
+
+<section class="scene" id="s1">
+  <div class="abs center-x kicker" id="s1k" style="top:190px">Catena Webs presenta</div>
+  <div class="abs" id="s1g" style="left:0;right:0;top:250px;display:flex;justify-content:center">
+    <svg width="170" height="170" viewBox="0 0 48 48"><path d="M24 9 C24 5 27 3 31 3" stroke="#a9b86a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M27 6 C33 2 40 5 41 10 C35 12 30 10 27 6Z" fill="#7f9036"/><g fill="#e8cf8f"><circle cx="17" cy="15" r="5"/><circle cx="27" cy="15" r="5"/><circle cx="37" cy="15" r="4.2" opacity=".85"/>
+    <circle cx="22" cy="24" r="5"/><circle cx="32" cy="24" r="5"/><circle cx="17" cy="33" r="4.4" opacity=".85"/><circle cx="27" cy="33" r="5"/><circle cx="22" cy="41" r="4.4"/></g></svg></div>
+  <div class="abs center-x big" id="s1a" style="top:430px">Viñedos</div>
+  <div class="abs center-x big wine" id="s1b" style="top:550px">de la Villa</div>
+  <div class="abs" id="s1c" style="left:0;right:0;top:700px;display:flex;justify-content:center"><div class="chip">🍷 Caja · Stock · Pedidos</div></div>
+</section>
+
+<section class="scene" id="s2">
+  <div class="abs laptop" id="s2lap" style="top:150px"><div class="scr"><div class="in"><img src="img/caja-limpia.png"></div></div><div class="base"></div></div>
+  <div class="abs shot" id="s2t" style="left:420px;top:560px;width:600px">
+    <img id="s2t0" src="img/ticket0.png"><img class="abs" id="s2t1" src="img/ticket1.png" style="left:0;top:0;width:100%">
+    <img class="abs" id="s2t2" src="img/ticket2.png" style="left:0;top:0;width:100%"><img class="abs" id="s2t3" src="img/ticket3.png" style="left:0;top:0;width:100%"></div>
+  <div class="abs bip" id="s2bip" style="left:90px;top:640px">📟 ¡Bip!</div>
+</section>
+
+<section class="scene" id="s3">
+  <div class="abs shot" id="s3img" style="left:450px;top:150px;width:590px;height:960px"><img src="img/sectores.png"></div>
+  <div class="abs chip" id="s3c1" style="left:40px;top:260px"><span class="sw" style="background:#a3274c"></span>Tintos</div>
+  <div class="abs chip" id="s3c2" style="left:40px;top:400px"><span class="sw" style="background:#d4b25a"></span>Blancos</div>
+  <div class="abs chip" id="s3c3" style="left:40px;top:540px"><span class="sw" style="background:#a0683a"></span>Destilados</div>
+  <div class="abs chip" id="s3c4" style="left:40px;top:680px"><span class="sw" style="background:#e0a21f"></span>Cervezas</div>
+</section>
+
+<section class="scene" id="s4">
+  <div class="abs center-x kicker" id="s4k" style="top:180px">Cobrar</div>
+  <div class="abs shot" id="s4a" style="left:140px;top:250px;width:800px"><img src="img/pago.png"></div>
+  <div class="abs shot" id="s4b" style="left:140px;top:250px;width:800px"><img src="img/cobrado.png"></div>
+  <div class="abs badge" id="s4m" style="left:60px;top:860px">🛡️ No cobra de menos</div>
+  <div class="abs badge" id="s4h" style="left:60px;top:1010px">📦 No vende sin stock</div>
+</section>
+
+<section class="scene" id="s5">
+  <div class="abs laptop" id="s5lap" style="top:150px"><div class="scr"><div class="in"><img src="img/cava.png"></div></div><div class="base"></div></div>
+  <div class="abs chip" id="s5c1" style="left:60px;top:880px">📷 Con foto</div>
+  <div class="abs chip" id="s5c2" style="left:60px;top:1020px">🏷️ Con precio</div>
+  <div class="abs shot" id="s5alta" style="left:650px;top:430px;width:360px;height:720px"><img id="s5altaImg" src="img/alta.png"></div>
+</section>
+
+<section class="scene" id="s6">
+  <div class="abs center-x kicker" id="s6k" style="top:180px">Importar desde Excel</div>
+  <div class="abs excel" id="s6x" style="left:120px;top:270px"><i></i><b>X</b></div>
+  <div class="abs" id="s6ar" style="left:470px;top:350px;font:800 150px P;color:#7fd8ff">➜</div>
+  <div class="abs" id="s6v" style="left:700px;top:290px;width:260px;height:260px;border-radius:60px;background:#6e1630;display:grid;place-items:center;font-size:150px;box-shadow:0 30px 90px rgba(143,36,67,.6)">🍷</div>
+  <div class="abs shot" id="s6imp" style="left:110px;top:590px;width:860px"><img src="img/import.png"></div>
+</section>
+
+<section class="scene" id="s7">
+  <div class="abs laptop" id="s7lap" style="top:150px"><div class="scr"><div class="in"><img src="img/deposito.png"></div></div><div class="base"></div></div>
+  <div class="abs badge" id="s7r" style="left:60px;top:860px">🔔 Reponer a tiempo</div>
+  <div class="abs shot" id="s7k" style="left:40px;top:180px;width:1000px"><img src="img/kpis.png"></div>
+  <div class="abs shot" id="s7b" style="left:140px;top:380px;width:800px"><img src="img/barras.png"></div>
+</section>
+
+<section class="scene" id="s8">
+  <div class="abs" id="s8v" style="left:0;right:0;top:200px;display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div style="font:800 100px/1 P;letter-spacing:-2px">Viñedos</div><div class="wine" style="font:800 100px/1.1 P;letter-spacing:-2px">de la Villa</div>
+    <div style="font:500 42px P;opacity:.85;margin-top:10px">Una caja hecha a medida</div></div>
+  <div class="abs" id="s8cw" style="left:0;right:0;top:560px;display:flex;justify-content:center;align-items:center;gap:22px">
+    <svg width="110" height="110" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="lg8" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#0055ff"/><stop offset="1" stop-color="#00bfff"/></linearGradient></defs>
+      <circle cx="32" cy="32" r="28" stroke="url(#lg8)" stroke-width="5"/><path d="M 27 20 L 15 32 L 27 44" stroke="url(#lg8)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 37 20 L 49 32 L 37 44" stroke="url(#lg8)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M 23 32 H 41" stroke="url(#lg8)" stroke-width="5" stroke-linecap="round"/></svg>
+    <div><div style="font:500 32px P;opacity:.8">Creado por</div><div style="font:800 64px/1 P">Catena Webs</div></div></div>
+  <div class="abs" id="s8cta" style="left:0;right:0;top:800px;display:flex;justify-content:center"><div class="cta">🥂 ¿Lo probamos juntos?</div></div>
+</section>
+
+<div id="cap"><div id="capTxt"></div></div>
+<!-- Cate, la mascota: círculo del logo, los < > son sus bracitos y el — es su boca -->
+<svg id="cate" viewBox="0 0 360 400" overflow="visible">
+  <defs>
+    <linearGradient id="cg" x1="60" y1="40" x2="300" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#0055ff"/><stop offset="1" stop-color="#00bfff"/></linearGradient>
+    <radialGradient id="cface" cx="0.4" cy="0.35" r="0.75"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#dcebff"/></radialGradient>
+  </defs>
+  <ellipse id="cShadow" cx="180" cy="385" rx="95" ry="14" fill="#000" opacity=".35"/>
+  <g id="cBody">
+    <g id="cArmL"><path d="M 50 136 L -16 196 L 50 256" stroke="url(#cg)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+    <g id="cArmR"><path d="M 310 136 L 376 196 L 310 256" stroke="url(#cg)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+    <circle cx="180" cy="196" r="128" fill="url(#cface)" stroke="url(#cg)" stroke-width="24"/>
+    <ellipse cx="128" cy="232" rx="20" ry="12" fill="#ff8fb1" opacity=".55"/>
+    <ellipse cx="232" cy="232" rx="20" ry="12" fill="#ff8fb1" opacity=".55"/>
+    <g id="cEyes">
+      <g id="cEyeL" transform="translate(140 182)"><ellipse rx="15" ry="21" fill="#0b1736"/><circle cx="5" cy="-8" r="5.5" fill="#fff"/></g>
+      <g id="cEyeR" transform="translate(220 182)"><ellipse rx="15" ry="21" fill="#0b1736"/><circle cx="5" cy="-8" r="5.5" fill="#fff"/></g>
+    </g>
+    <clipPath id="mclip"><path id="cMouthClip"/></clipPath>
+    <path id="cMouth" fill="#0b1736" stroke="#0b1736" stroke-width="7" stroke-linejoin="round"/>
+    <ellipse id="cTongue" cx="180" cy="262" rx="16" ry="0" fill="#ff6b8b" clip-path="url(#mclip)"/>
+  </g>
+</svg>
+<div id="cateName">¡Hola, soy Cate! 👋</div>
+
+
+<script>
+
+// DATA se inyecta desde render.py: escenas, envolvente de la voz y subtítulos.
+window.DATA = window.DATA || null;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const eo = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const eio = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const back = (x) => { x = clamp(x); const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, p) => a + (b - a) * p;
+const prog = (t, start, dur) => clamp((t - start) / dur);
+
+function pop(el, p, o = {}) {
+  const y = o.y ?? 70, s = o.s ?? .85, x = o.x ?? 0, r = o.r ?? 0;
+  const q = o.ease === 'back' ? back(p) : eo(p);
+  el.style.opacity = clamp(p * 1.6);
+  el.style.transform = `translate(${(1 - q) * x}px, ${(1 - q) * y}px) scale(${s + (1 - s) * q}) rotate(${(1 - q) * r}deg)`;
+}
+
+
+// Glifos de código flotando de fondo
+const GL = ['</>', '{ }', '< >', '/>', '#', '( )', '=>', ';'];
+for (let i = 0; i < 16; i++) {
+  const g = document.createElement('div'); g.className = 'glyph'; g.textContent = GL[i % GL.length];
+  g.dataset.x = (i * 137) % 1000; g.dataset.y = (i * 311) % 1920; g.dataset.v = 30 + (i * 17) % 50;
+  $('glyphs').appendChild(g);
+}
+
+function fondo(t) {
+  $('b1').style.transform = `translate(${-150 + Math.sin(t * .35) * 220}px, ${200 + Math.cos(t * .27) * 260}px)`;
+  $('b2').style.transform = `translate(${600 + Math.cos(t * .31) * 200}px, ${1100 + Math.sin(t * .22) * 300}px)`;
+  $('grid').style.transform = `translateY(${(t * 22) % 90}px)`;
+  document.querySelectorAll('.glyph').forEach((g, i) => {
+    const y = ((+g.dataset.y - t * +g.dataset.v) % 2100 + 2100) % 2100 - 120;
+    g.style.transform = `translate(${+g.dataset.x + Math.sin(t * .6 + i) * 30}px, ${y}px) rotate(${Math.sin(t * .4 + i) * 12}deg)`;
+  });
+}
+
+
+const POSES = {
+  s1: { x: 540, y: 1235, s: .95, g: 'saludo' },
+  s2: { x: 210, y: 1230, s: .62, g: 'senala', dir: 1 },
+  s3: { x: 230, y: 1230, s: .6, g: 'senala', dir: 1 },
+  s4: { x: 900, y: 1230, s: .56, g: 'festeja' },
+  s5: { x: 470, y: 1230, s: .58, g: 'senala', dir: 1 },
+  s6: { x: 960, y: 1245, s: .5, g: 'salta' },
+  s7: { x: 920, y: 1230, s: .56, g: 'senala', dir: -1 },
+  s8: { x: 540, y: 1190, s: .85, g: 'saludo' },
+};
+function mascota(t, sc, lt, nextSc, tr, env) {
+  const a = POSES[sc.id], b = POSES[nextSc ? nextSc.id : sc.id];
+  const p = eio(tr);
+  // salto en arco al cambiar de lugar
+  const hop = Math.sin(p * Math.PI) * (tr > 0 ? 160 : 0);
+  let x = lerp(a.x, b.x, p), y = lerp(a.y, b.y, p) - hop, s = lerp(a.s, b.s, p);
+  const g = tr > .5 ? b : a;
+
+  // entrada en S1: cae desde arriba con rebote
+  let enter = 1;
+  if (sc.id === 's1') { enter = back(prog(lt, (sc.marks.hola ?? 2.4) - .55, .6)); y = lerp(-500, y, enter); }
+
+  const bob = Math.sin(t * 3.2) * 10;
+  const talk = env;
+  let rot = Math.sin(t * 1.7) * 3 + (tr > 0 ? Math.sin(p * Math.PI) * 14 * (b.x > a.x ? 1 : -1) : 0);
+  let squash = 1 + talk * .05;
+  if (g.g === 'salta') { const j = Math.abs(Math.sin(t * 4.2)); y -= j * 60; squash = 1 + (1 - j) * .08; }
+  if (g.g === 'festeja') { y -= Math.abs(Math.sin(t * 5)) * 40; rot += Math.sin(t * 5) * 6; }
+
+  const el = $('cate');
+  el.style.transform = `translate(${x - 180}px, ${y + bob - 360}px) scale(${s}) rotate(${rot}deg) scale(${1 / Math.sqrt(squash)}, ${squash})`;
+  $('cShadow').setAttribute('opacity', (.35 - Math.min(hop, 160) / 800).toFixed(3));
+
+  // brazos
+  let la = Math.sin(t * 2.4) * 6, ra = -Math.sin(t * 2.4) * 6;
+  if (g.g === 'saludo') ra = -25 + Math.sin(t * 9) * 28;
+  if (g.g === 'senala') { if ((g.dir || 1) > 0) ra = -18 + Math.sin(t * 6) * 6; else la = 18 - Math.sin(t * 6) * 6; }
+  if (g.g === 'festeja' || g.g === 'salta') { la = 30 + Math.sin(t * 10) * 18; ra = -30 - Math.sin(t * 10) * 18; }
+  $('cArmL').setAttribute('transform', `rotate(${la} 50 196)`);
+  $('cArmR').setAttribute('transform', `rotate(${ra} 310 196)`);
+
+  // mirada hacia donde señala + parpadeo
+  const look = g.g === 'senala' ? (g.dir || 1) * 8 : Math.sin(t * .9) * 4;
+  const blinkPh = (t + 0.37) % 3.4, blink = blinkPh < .14 ? Math.max(.08, Math.abs(blinkPh - .07) / .07) : 1;
+  $('cEyeL').setAttribute('transform', `translate(${140 + look} 182) scale(1 ${blink})`);
+  $('cEyeR').setAttribute('transform', `translate(${220 + look} 182) scale(1 ${blink})`);
+
+  // boca: la barra "—" del logo se abre con la voz
+  // sonrisa: arriba casi recta (la barra del logo), abajo se abre con la voz
+  const h = 5 + talk * 44, w = 62 - talk * 12, x0 = 180 - w / 2, x1 = 180 + w / 2, y0 = 238;
+  const d = `M ${x0} ${y0} Q 180 ${y0 + 5} ${x1} ${y0} Q 180 ${y0 + 8 + h * 1.6} ${x0} ${y0} Z`;
+  $('cMouth').setAttribute('d', d); $('cMouthClip').setAttribute('d', d);
+  $('cTongue').setAttribute('ry', talk > .15 ? 6 + talk * 12 : 0);
+  $('cTongue').setAttribute('cy', y0 + 4 + h * .8 + 8);
+
+  // cartel "Hola, soy Cate" en S1
+  const nm = $('cateName');
+  if (sc.id === 's1') {
+    const pn = prog(lt, sc.marks.hola ?? 2.4, .4), out = prog(lt, sc.dur - .8, .4);
+    nm.style.opacity = clamp(pn * 1.5) * (1 - out);
+    nm.style.transform = `translate(${x - nm.offsetWidth / 2}px, ${y - 400 * s + bob - 40}px) scale(${.6 + .4 * back(pn)})`;
+  } else nm.style.opacity = 0;
+}
+
+
+const show = (id, on) => { $(id).style.opacity = on ? 1 : 0; };
+function escena(id, lt, sc) {
+  const d = sc.dur, M = sc.marks || {};
+  if (id === 's1') {
+    pop($('s1k'), prog(lt, 0, .5), { y: -40 });
+    pop($('s1g'), prog(lt, .15, .6), { s: .3, y: 0, r: -20, ease: 'back' });
+    pop($('s1a'), prog(lt, .35, .5), { x: -300, y: 0 });
+    pop($('s1b'), prog(lt, .55, .55), { x: 300, y: 0 });
+    pop($('s1c'), prog(lt, (M.vinedos ?? 4) - .2, .5), { y: 60, ease: 'back' });
+    $('s1g').style.rotate = `${Math.sin(lt * 2) * 6}deg`;
+  }
+  if (id === 's2') {
+    pop($('s2lap'), prog(lt, 0, .6), { y: 300 });
+    const k0 = M.lector ?? 2, k1 = M.ticket ?? (k0 + 1.4);
+    const ts = [k0 - .1, k0 + .55, k1 - .1];
+    pop($('s2t'), prog(lt, k0 - .5, .5), { x: 600, y: 0, ease: 'back' });
+    ['s2t1', 's2t2', 's2t3'].forEach((c, i) => { $(c).style.opacity = lt >= ts[i] ? 1 : 0; });
+    const last = ts.filter(t => lt >= t).pop();
+    const pb = last === undefined ? 0 : prog(lt, last, .35);
+    $('s2bip').style.opacity = last === undefined ? 0 : clamp(1.6 - pb * 1.2 - (lt - last) * .8);
+    $('s2bip').style.transform = `scale(${.6 + .5 * back(pb)}) rotate(-6deg)`;
+    $('s2t').style.scale = 1 + (last !== undefined ? Math.max(0, .04 - (lt - last) * .12) : 0);
+  }
+  if (id === 's3') {
+    pop($('s3img'), prog(lt, 0, .6), { x: 500, y: 0 });
+    const img = $('s3img').querySelector('img'); const H = img.naturalHeight * (590 / img.naturalWidth) - 960;
+    img.style.transform = `translateY(${-eio(prog(lt, 1, d - 1.6)) * Math.max(0, H)}px)`;
+    ['s3c1', 's3c2', 's3c3', 's3c4'].forEach((c, i) => {
+      const k = [M.tintos, M.blancos, M.destilados, M.cervezas][i] ?? (1 + i * .6);
+      pop($(c), prog(lt, k - .15, .45), { x: -400, y: 0, ease: 'back' });
+      $(c).style.translate = `0 ${Math.sin(lt * 2 + i) * 8}px`;
+    });
+  }
+  if (id === 's4') {
+    pop($('s4k'), prog(lt, 0, .4), { y: -40 });
+    pop($('s4a'), prog(lt, .1, .55), { y: 300, ease: 'back' });
+    const kv = (M.vuelto ?? 2.5) + .2;
+    $('s4b').style.opacity = clamp((lt - kv) / .25);
+    $('s4b').style.transform = `scale(${.94 + .06 * back(prog(lt, kv, .4))})`;
+    pop($('s4m'), prog(lt, (M.menos ?? 5) - .2, .45), { x: -800, y: 0, ease: 'back' });
+    pop($('s4h'), prog(lt, (M.hay ?? 6) - .2, .45), { x: -800, y: 0, ease: 'back' });
+  }
+  if (id === 's5') {
+    pop($('s5lap'), prog(lt, 0, .6), { y: 300 });
+    pop($('s5c1'), prog(lt, (M.foto ?? 1.5) - .15, .45), { x: -500, y: 0, ease: 'back' });
+    pop($('s5c2'), prog(lt, (M.precio ?? 2.2) - .15, .45), { x: -500, y: 0, ease: 'back' });
+    const pa = prog(lt, (M.nuevo ?? 4) - .3, .55);
+    pop($('s5alta'), pa, { x: 500, y: 0, r: 8, ease: 'back' });
+    const im = $('s5altaImg'); const H = im.naturalHeight * (360 / im.naturalWidth) - 720;
+    im.style.transform = `translateY(${-eio(prog(lt, (M.nuevo ?? 4) + .4, 2.2)) * Math.max(0, H) * .55}px)`;
+  }
+  if (id === 's6') {
+    pop($('s6k'), prog(lt, 0, .4), { y: -40 });
+    const ke = M.excel ?? 1.5;
+    pop($('s6x'), prog(lt, ke - .4, .5), { s: .3, y: 0, r: -15, ease: 'back' });
+    pop($('s6ar'), prog(lt, ke + .1, .4), { x: -150, y: 0 });
+    $('s6ar').style.translate = `${Math.sin(lt * 6) * 14}px 0`;
+    pop($('s6v'), prog(lt, ke + .4, .5), { s: .3, y: 0, ease: 'back' });
+    pop($('s6imp'), prog(lt, (M.vista ?? 4) - .5, .6), { y: 500, ease: 'back' });
+  }
+  if (id === 's7') {
+    const kn = (M.numeros ?? 3) - .3, out = prog(lt, kn - .3, .35);
+    pop($('s7lap'), prog(lt, 0, .6), { y: 300 });
+    $('s7lap').style.opacity = clamp(prog(lt, 0, .6) * 1.6) * (1 - out);
+    pop($('s7r'), prog(lt, (M.reponer ?? 1.5) - .15, .45), { x: -800, y: 0, ease: 'back' });
+    $('s7r').style.opacity = clamp(prog(lt, (M.reponer ?? 1.5) - .15, .45) * 1.6) * (1 - out);
+    pop($('s7k'), prog(lt, kn, .5), { y: -200, ease: 'back' });
+    pop($('s7b'), prog(lt, (M.sale ?? (kn + 2)) - .6, .55), { y: 400, ease: 'back' });
+  }
+  if (id === 's8') {
+    pop($('s8v'), prog(lt, 0, .7), { s: .5, y: 0, ease: 'back' });
+    pop($('s8cw'), prog(lt, (M.catena ?? 3) - .3, .5), { y: 80, ease: 'back' });
+    pop($('s8cta'), prog(lt, (M.juntos ?? 4.5) - .4, .5), { s: .3, y: 0, ease: 'back' });
+    $('s8cta').style.rotate = `${prog(lt, (M.juntos ?? 4.5), .1) >= 1 ? Math.sin(lt * 5) * 2 : 0}deg`;
+  }
+}
+function subtitulo(t) {
+  const c = DATA.caps.find((c) => t >= c.a && t < c.b);
+  const el = $('capTxt');
+  if (!c) { el.style.opacity = 0; return; }
+  if (el.dataset.k !== String(c.a)) {
+    el.dataset.k = String(c.a);
+    el.innerHTML = c.text.replace(/(Viñedos de la Villa|Catena Webs|Cate|lector|ticket|tintos|blancos|destilados|cervezas|vuelto|cobrar de menos|foto|precio|Excel|vista previa|reponer|Números|a medida|juntos)/g, '<span class="hl">$1</span>');
+  }
+  const p = prog(t, c.a, .18);
+  el.style.opacity = clamp(p * 1.5) * (1 - prog(t, c.b - .1, .1));
+  el.style.transform = `scale(${.86 + .14 * back(p)})`;
+}
+
+function render(t) {
+  fondo(t);
+  const S = DATA.scenes;
+  let i = S.findIndex((s) => t >= s.start && t < s.start + s.dur);
+  if (i < 0) i = S.length - 1;
+  const sc = S[i], lt = t - sc.start;
+  S.forEach((s, j) => {
+    const el = $(s.id); if (!el) return;
+    if (j !== i) { el.style.opacity = 0; return; }
+    const pin = prog(lt, 0, .35), pout = j < S.length - 1 ? prog(lt, s.dur - .32, .32) : 0;
+    el.style.opacity = Math.min(1, pin * 2) * (1 - pout);
+    el.style.transform = `translateX(${-pout * 260}px) scale(${1 - pout * .06})`;
+    escena(s.id, lt, s);
+  });
+  const env = DATA.env[Math.min(DATA.env.length - 1, Math.round(t * DATA.fps))] || 0;
+  const next = S[i + 1];
+  const tr = next ? prog(lt, sc.dur - .6, .6) : 0;
+  mascota(t, sc, lt, next, tr, env);
+  subtitulo(t);
+}
+window.render = render;
+
+</script></body></html>

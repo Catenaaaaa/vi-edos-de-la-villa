@@ -1,0 +1,10 @@
+[
+ {"id":"s1","voz":"¡Hola! Soy Cate, la mascota de Catena Uebs. Hoy te presento el sistema de caja que hicimos para Viñedos de la Villa.","cap":"¡Hola! Soy Cate, la mascota de Catena Webs. Hoy te presento el sistema de caja que hicimos para Viñedos de la Villa."},
+ {"id":"s2","voz":"Para vender, pasás la botella por el lector de código de barras, y entra directo al ticket. Sin tipear nada.","cap":"Para vender, pasás la botella por el lector de código de barras, y entra directo al ticket. Sin tipear nada."},
+ {"id":"s3","voz":"Los productos están ordenados por sector: tintos, blancos, destilados, cervezas. Y los encontrás con un solo toque.","cap":"Los productos están ordenados por sector: tintos, blancos, destilados, cervezas. Y los encontrás con un solo toque."},
+ {"id":"s4","voz":"Al cobrar, ponés con cuánto te pagan, y el vuelto se calcula solo. Además, el sistema no te deja cobrar de menos, ni vender lo que no hay.","cap":"Al cobrar, ponés con cuánto te pagan, y el vuelto se calcula solo. Además, el sistema no te deja cobrar de menos, ni vender lo que no hay."},
+ {"id":"s5","voz":"En la cava cargás cada producto con su foto y su precio. Y si escaneás uno nuevo, te lo deja listo para darlo de alta.","cap":"En la cava cargás cada producto con su foto y su precio. Y si escaneás uno nuevo, te lo deja listo para darlo de alta."},
+ {"id":"s6","voz":"¿Ya tenés tu lista de precios en Excel? La importás en segundos, con una vista previa antes de guardar.","cap":"¿Ya tenés tu lista de precios en Excel? La importás en segundos, con una vista previa antes de guardar."},
+ {"id":"s7","voz":"El depósito te avisa qué hay que reponer. Y en números, ves cuánto vendiste, cuánto ganaste, y qué es lo que más sale.","cap":"El depósito te avisa qué hay que reponer. Y en Números ves cuánto vendiste, cuánto ganaste y qué es lo que más sale."},
+ {"id":"s8","voz":"Viñedos de la Villa: una caja hecha a medida, por Catena Uebs. ¿Lo probamos juntos?","cap":"Viñedos de la Villa: una caja hecha a medida, por Catena Webs. ¿Lo probamos juntos?"}
+]

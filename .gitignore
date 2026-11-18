@@ -1,0 +1,6 @@
+video/voz/
+video/*.wav
+video/*.mp4
+video/stills/
+video/data.json
+__pycache__/
