@@ -333,7 +333,7 @@
         <div class="laser"></div>
         <label for="codigo">Código de barras · pasá la botella por el lector</label>
         <input id="codigo" placeholder="Escaneá o escribí el código" autocomplete="off">
-        <div class="hint">El lector escribe el código y aprieta Enter solo. Funciona aunque estés en otro campo.</div>
+        <div class="hint">El lector escribe el código solo. Funciona aunque estés en otro campo. Si la botella no está cargada, te lleva a darla de alta.</div>
       </div>
       <label for="buscar" style="margin-top:16px">Buscar en la cava</label>
       <input id="buscar" placeholder="Malbec, fernet, espumante…" autocomplete="off">
@@ -551,9 +551,9 @@
         <button class="btn danger" id="btnBorrar">Borrar todo</button>
       </div>
       <p class="hint" style="margin-top:14px">
-        <b>Lector de código de barras:</b> los lectores USB comunes escriben el código y mandan Enter (modo "teclado").
+        <b>Lector de código de barras:</b> los lectores USB comunes escriben el código como un teclado (terminen con Enter, con Tab o sin tecla final).
         La app reconoce la ráfaga en cualquier sector: en <b>Caja</b> suma al ticket, en <b>Cava</b> carga o abre el producto y en <b>Pedidos</b> lo selecciona.
-        Si escaneás algo que no existe, te ofrece darlo de alta.
+        Si escaneás algo que no está cargado, abre el alta con el código puesto y busca el nombre y la foto en Open Food Facts (base pública; necesita internet).
       </p>
       <p class="hint">Para cargar a mano en una pantalla táctil usá el botón <b>⌨ Teclado</b>.</p>
       <label style="margin-top:14px"><input type="checkbox" id="optBeep" style="width:auto;margin-right:6px;vertical-align:middle">Pitido al escanear</label>
@@ -988,73 +988,142 @@ function procesarCodigo(cod){
 
   if(tabActiva==='productos'){
     if(p){ editarProducto(p.id); estadoLector('hit','Editando: '+p.nombre); beep(true); }
-    else{
-      limpiarFormProd(); document.getElementById('p_codigo').value=cod;
-      document.getElementById('p_nombre').focus();
-      msg('msgProd','Código nuevo '+cod+': completá los datos y guardá.','good');
-      estadoLector('hit','Código nuevo'); beep(true);
-    }
+    else altaConCodigo(cod,null);
     return;
   }
   if(tabActiva==='pedidos'){
-    if(p){ document.getElementById('ped_producto').value=p.id; document.getElementById('ped_costo').value=p.precioCosto||0;
-      document.getElementById('ped_cant').focus(); document.getElementById('ped_cant').select();
-      limpiarMsg('msgPed'); estadoLector('hit',p.nombre); beep(true); }
-    else{ msg('msgPed','Código '+cod+' no está cargado.','err',{txt:'Darlo de alta',fn:()=>altaConCodigo(cod)}); estadoLector('miss','No encontrado'); beep(false); }
+    if(p){ elegirEnPedido(p); estadoLector('hit',p.nombre); beep(true); }
+    else altaConCodigo(cod,'pedidos');
     return;
   }
 
   /* cualquier otro sector: vender */
+  if(!p){ altaConCodigo(cod,'ventas'); return; }
   if(tabActiva!=='ventas') irA('ventas');
-  if(p){
-    if(agregarAlCarrito(p.id,1)){ estadoLector('hit','+1 '+p.nombre); beep(true); }
-    else estadoLector('miss','Sin stock');
-  }else{
-    msg('msgBuscar','Código '+cod+' no encontrado.','err',{txt:'Darlo de alta',fn:()=>altaConCodigo(cod)});
-    estadoLector('miss','No encontrado'); beep(false);
-  }
+  if(agregarAlCarrito(p.id,1)){ estadoLector('hit','+1 '+p.nombre); beep(true); }
+  else estadoLector('miss','Sin stock');
   const inp=document.getElementById('codigo');
   inp.value='';
   if(document.activeElement!==inp) inp.focus();
 }
-function altaConCodigo(cod){
-  irA('productos'); limpiarFormProd();
+function elegirEnPedido(p){
+  document.getElementById('ped_producto').value=p.id; document.getElementById('ped_costo').value=p.precioCosto||0;
+  document.getElementById('ped_cant').focus(); document.getElementById('ped_cant').select();
+  limpiarMsg('msgPed');
+}
+/* código que no está en la cava: abre el alta con el código puesto y busca nombre/foto.
+   origen = sector al que se vuelve al guardar ('ventas' suma al ticket, 'pedidos' lo selecciona) */
+let origenAlta=null;
+function altaConCodigo(cod,origen){
+  if(tabActiva!=='productos') irA('productos');
+  limpiarFormProd();
+  origenAlta=origen||null;
   document.getElementById('p_codigo').value=cod;
   document.getElementById('p_nombre').focus();
-  msg('msgProd','Código '+cod+' listo: completá nombre, sector y precios.','good');
+  window.scrollTo(0,0);
+  msg('msgProd','Código nuevo '+cod+': completá nombre, sector, precios y stock, y guardá.'+(origenAlta==='ventas'?' Después vuelve a la caja y lo suma al ticket.':origenAlta==='pedidos'?' Después vuelve a Pedidos.':''),'good');
+  estadoLector('hit','Código nuevo'); beep(true);
+  buscarDatosCodigo(cod);
 }
 
-const SCAN={buf:'',last:0,n:0,burst:false,lastCode:'',lastAt:0,rafaga:''};
+/* ======== DATOS DEL CÓDIGO: Open Food Facts (base pública y gratuita) ======== */
+const OFF_SECTORES=[[/sparkling|champagne|cava-wine|prosecco|espumant/,'Espumantes'],[/rose-wine|rosado/,'Rosados'],
+  [/white-wine/,'Blancos'],[/red-wine/,'Tintos'],[/vermouth|aperitif|bitter/,'Aperitivos'],
+  [/whisk|gin|vodka|rum|tequila|brand|liqueur|spirit|fernet|grappa|pisco/,'Destilados'],[/beer|cerveza/,'Cervezas'],
+  [/water|soda|juice|soft-drink|carbonated/,'Sin alcohol']];
+function sectorDeOFF(tags){
+  const t=(tags||[]).join(' ');
+  const r=OFF_SECTORES.find(([re])=>re.test(t)); if(!r) return '';
+  const ex=DB.productos.map(p=>(p.categoria||'').trim()).find(c=>c.toLowerCase()===r[1].toLowerCase());
+  return ex||r[1];
+}
+let busquedaCod=0;
+async function buscarDatosCodigo(cod){
+  if(!/^\d{8,14}$/.test(cod) || navigator.onLine===false) return;
+  const id=++busquedaCod;
+  const sigue=()=>id===busquedaCod && tabActiva==='productos' && !editandoId && limpiarCodigo(document.getElementById('p_codigo').value)===cod;
+  const tag=document.querySelector('#tab-productos h3 .tag'); tag.textContent='BUSCANDO DATOS…';
+  const fin=()=>{ if(id===busquedaCod) tag.textContent='ESCANEÁ PARA CARGAR'; };
+  let d=null;
+  try{
+    const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),7000);
+    const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+cod+'.json?fields=product_name,product_name_es,brands,quantity,categories_tags,image_front_small_url',{signal:ctl.signal});
+    clearTimeout(to);
+    if(r.ok){ const j=await r.json(); if(j && j.status===1 && j.product) d=j.product; }
+  }catch(e){}
+  if(!sigue()){ fin(); return; }
+  const base=String(d && (d.product_name_es||d.product_name)||'').trim();
+  if(!base){ fin(); return; } // no figura: queda el mensaje del alta para completar a mano
+  const marca=String(d.brands||'').split(',')[0].trim(), cant=String(d.quantity||'').trim();
+  let nombre=base;
+  if(marca && !nombre.toLowerCase().includes(marca.toLowerCase())) nombre=marca+' '+nombre;
+  if(cant && !nombre.toLowerCase().includes(cant.toLowerCase())) nombre+=' '+cant;
+  nombre=nombre.replace(/\s+/g,' ').slice(0,80);
+  const inN=document.getElementById('p_nombre'), inC=document.getElementById('p_cat');
+  const relleno=[];
+  if(!inN.value.trim()){ inN.value=nombre; relleno.push('nombre'); }
+  const sec=sectorDeOFF(d.categories_tags);
+  if(sec && !inC.value.trim()){ inC.value=sec; relleno.push('sector'); }
+  prevFoto();
+  if(relleno.length && document.activeElement===inN){ const sig=inC.value.trim()?'p_venta':'p_cat'; document.getElementById(sig).focus(); document.getElementById(sig).select&&document.getElementById(sig).select(); }
+  if(d.image_front_small_url && !fotoForm){
+    try{
+      const r=await fetch(d.image_front_small_url); if(!r.ok) throw 0;
+      const f=await leerFoto(await r.blob());
+      if(sigue() && !fotoForm){ fotoForm=f; prevFoto(); relleno.push('foto'); }
+    }catch(e){}
+  }
+  fin();
+  if(sigue() && relleno.length) msg('msgProd','Encontré "'+nombre+'" en la base pública ('+relleno.join(', ')+'). Revisalo, poné precios y stock, y guardá.','good');
+}
+
+/* Sirve para lectores que terminan con Enter, con Tab o sin tecla final (se cierra
+   la lectura cuando deja de escribir), y para lectores lentos (hasta 90 ms por tecla). */
+const SCAN={buf:'',last:0,n:0,burst:false,lastCode:'',lastAt:0,rafaga:'',timer:null};
+const SCAN_GAP=90, SCAN_FIN=220;
+function resetScan(){ SCAN.buf=''; SCAN.n=0; SCAN.burst=false; clearTimeout(SCAN.timer); SCAN.timer=null; }
+function cerrarRafaga(act){
+  const cod=limpiarCodigo(SCAN.buf), ahora=Date.now();
+  if(!cod || (cod===SCAN.lastCode && ahora-SCAN.lastAt<300)) return false;
+  if(act && typeof act.value==='string' && act.type!=='checkbox'){ // el lector escribió acá: lo sacamos
+    const v=act.value; const i=v.lastIndexOf(SCAN.buf);
+    act.value = i>=0 ? v.slice(0,i)+v.slice(i+SCAN.buf.length) : '';
+    act.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  SCAN.lastCode=cod; SCAN.lastAt=ahora;
+  procesarCodigo(cod);
+  return true;
+}
 document.addEventListener('keydown',e=>{
-  const ahora=Date.now();
+  const ahora=e.timeStamp||performance.now(); // hora de la tecla (no se atrasa si la pantalla tarda en dibujar)
+  const esLectura = SCAN.burst && SCAN.n>=5 && ahora-SCAN.last<=SCAN_FIN;
   if(e.key==='Enter'){
-    if(SCAN.burst && SCAN.n>=5){
-      const cod=limpiarCodigo(SCAN.buf);
+    if(esLectura){
       const act=document.activeElement;
-      const enCampoCodigo = act && (act.id==='codigo');
-      if(cod && !enCampoCodigo && !(cod===SCAN.lastCode && ahora-SCAN.lastAt<300)){
-        e.preventDefault(); e.stopPropagation();
-        if(act && typeof act.value==='string' && act.type!=='checkbox'){ // el lector escribió acá: lo sacamos
-          const v=act.value; const i=v.lastIndexOf(SCAN.buf);
-          act.value = i>=0 ? v.slice(0,i)+v.slice(i+SCAN.buf.length) : '';
-          act.dispatchEvent(new Event('input',{bubbles:true}));
-        }
-        procesarCodigo(cod);
-        SCAN.lastCode=cod; SCAN.lastAt=ahora;
-      }
+      if(!(act && act.id==='codigo')){ e.preventDefault(); e.stopPropagation(); cerrarRafaga(act); }
     }
-    SCAN.rafaga = (SCAN.burst && SCAN.n>=5) ? SCAN.buf : ''; // la usa el campo del código si el foco llegó a mitad de la lectura
-    SCAN.buf=''; SCAN.n=0; SCAN.burst=false;
+    SCAN.rafaga = esLectura ? SCAN.buf : ''; // la usa el campo del código si el foco llegó a mitad de la lectura
+    resetScan();
+    return;
+  }
+  if(e.key==='Tab' && esLectura){ // lector configurado con Tab al final
+    e.preventDefault(); e.stopPropagation();
+    cerrarRafaga(document.activeElement); resetScan();
     return;
   }
   const imprimible=e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey;
   if(imprimible){
-    SCAN.burst=(ahora-SCAN.last<=40) && SCAN.n>0;
+    SCAN.burst=(ahora-SCAN.last<=SCAN_GAP) && SCAN.n>0;
     SCAN.buf=SCAN.burst?SCAN.buf+e.key:e.key;
     SCAN.n=SCAN.burst?SCAN.n+1:1;
     SCAN.last=ahora;
+    clearTimeout(SCAN.timer);
+    SCAN.timer=setTimeout(()=>{ // lector sin tecla final: se cierra cuando deja de escribir
+      SCAN.timer=null;
+      if(SCAN.burst && SCAN.n>=8){ cerrarRafaga(document.activeElement); resetScan(); }
+    },SCAN_FIN);
   }else if(e.key!=='Shift'){
-    SCAN.buf=''; SCAN.n=0; SCAN.burst=false;
+    resetScan();
   }
 },true);
 document.getElementById('codigo').addEventListener('keydown',e=>{
@@ -1156,7 +1225,7 @@ document.querySelectorAll('.keys button').forEach(b=>b.addEventListener('click',
 
 /* ======== CAVA / PRODUCTOS ======== */
 function limpiarFormProd(){
-  editandoId=null;
+  editandoId=null; origenAlta=null; busquedaCod++;
   ['p_codigo','p_nombre','p_cat'].forEach(id=>document.getElementById(id).value='');
   ['p_costo','p_venta','p_stock','p_min'].forEach(id=>document.getElementById(id).value='0');
   document.getElementById('formTitle').textContent='Nuevo producto';
@@ -1208,8 +1277,11 @@ document.getElementById('btnGuardarProd').addEventListener('click',()=>{
     carrito.forEach(i=>{ if(i.productoId===p.id){ i.nombre=p.nombre; i.precio=p.precioVenta; i.costo=p.precioCosto; } });
     save(); limpiarFormProd(); msg('msgProd','Producto actualizado.','good');
   }else{
-    DB.productos.push(Object.assign({id:uid()},datos));
+    const nuevo=Object.assign({id:uid()},datos), volver=origenAlta;
+    DB.productos.push(nuevo);
     save(); limpiarFormProd(); msg('msgProd','Producto agregado a la cava.','good');
+    if(volver==='ventas'){ irA('ventas'); if(agregarAlCarrito(nuevo.id,1)) estadoLector('hit','+1 '+nuevo.nombre); return; }
+    if(volver==='pedidos'){ irA('pedidos'); elegirEnPedido(nuevo); return; }
   }
   renderAll();
   document.getElementById('p_codigo').focus();

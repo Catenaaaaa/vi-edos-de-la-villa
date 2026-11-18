@@ -27,11 +27,13 @@ Cada `git push` a `main` actualiza la página.
 6. **Datos**: backup JSON, exportar CSV, datos de ejemplo, créditos.
 
 ## Lector de código de barras
-Lectores USB en modo teclado (escriben el código + Enter). Se detecta la ráfaga en cualquier sector:
+Lectores USB en modo teclado. Sirve si terminan con Enter, con Tab o sin tecla final, y tolera lectores lentos (hasta 90 ms por tecla). Se detecta la ráfaga en cualquier sector:
 - Caja (o cualquier sector que no sea Cava/Pedidos): suma al ticket.
-- Cava: si el código existe abre el producto; si no, lo precarga para darlo de alta.
+- Cava: si el código existe abre el producto para editarlo.
 - Pedidos: selecciona el producto.
-- Código desconocido → botón "Darlo de alta". Pitido opcional (Datos).
+- Código que no está cargado → abre directo el alta en Cava con el código puesto y busca nombre, sector y foto
+  en Open Food Facts (base pública y gratuita, necesita internet). Al guardar vuelve a la Caja y lo suma al ticket
+  (o vuelve a Pedidos y lo selecciona). Pitido opcional (Datos).
 
 ## Origen
 Basado en `~/kiosco.html` (Kiosco POS), que queda sin tocar como plantilla.
