@@ -2,7 +2,7 @@
 import os
 from playwright.sync_api import sync_playwright
 V=os.path.dirname(os.path.abspath(__file__)); I=V+'/img'
-URL='file://'+os.path.abspath(V+'/../index.html')
+URL='file://'+os.path.abspath(V+'/../public/index.html')
 SCAN_JS='''async (code)=>{const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  for(const ch of code+'\\n'){const key=ch==='\\n'?'Enter':ch;const el=document.activeElement;
   const ok=(el||document).dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));

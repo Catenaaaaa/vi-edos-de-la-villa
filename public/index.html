@@ -1024,7 +1024,7 @@ function altaConCodigo(cod){
   msg('msgProd','Código '+cod+' listo: completá nombre, sector y precios.','good');
 }
 
-const SCAN={buf:'',last:0,n:0,burst:false,lastCode:'',lastAt:0};
+const SCAN={buf:'',last:0,n:0,burst:false,lastCode:'',lastAt:0,rafaga:''};
 document.addEventListener('keydown',e=>{
   const ahora=Date.now();
   if(e.key==='Enter'){
@@ -1043,6 +1043,7 @@ document.addEventListener('keydown',e=>{
         SCAN.lastCode=cod; SCAN.lastAt=ahora;
       }
     }
+    SCAN.rafaga = (SCAN.burst && SCAN.n>=5) ? SCAN.buf : ''; // la usa el campo del código si el foco llegó a mitad de la lectura
     SCAN.buf=''; SCAN.n=0; SCAN.burst=false;
     return;
   }
@@ -1057,7 +1058,14 @@ document.addEventListener('keydown',e=>{
   }
 },true);
 document.getElementById('codigo').addEventListener('keydown',e=>{
-  if(e.key==='Enter'){ e.preventDefault(); procesarCodigo(e.target.value); e.target.value=''; }
+  if(e.key==='Enter'){
+    e.preventDefault();
+    /* si el cursor llegó al campo con la lectura empezada, el campo tiene solo el final del código:
+       usamos la ráfaga completa que registró el lector */
+    const v=limpiarCodigo(e.target.value), r=limpiarCodigo(SCAN.rafaga);
+    procesarCodigo(r && r.length>v.length && r.endsWith(v) ? r : e.target.value);
+    e.target.value='';
+  }
 });
 document.getElementById('buscar').addEventListener('input',renderBusqueda);
 document.getElementById('buscar').addEventListener('keydown',e=>{

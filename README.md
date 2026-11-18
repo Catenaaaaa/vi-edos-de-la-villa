@@ -1,14 +1,22 @@
 # Viñedos de la Villa — Caja, stock y pedidos
 
-Sistema de punto de venta en un solo archivo (`index.html`) para **Viñedos de la Villa**,
+Sistema de punto de venta en un solo archivo (`public/index.html`) para **Viñedos de la Villa**,
 vinoteca de Villa Allende (Av. del Niágara 635) — vinos, espirituosas y más.
 
 Creada por **Catena Webs**.
 
 ## Cómo se usa
-Abrir `index.html` con Chrome/Edge. No necesita internet salvo para las tipografías
+Abrir `public/index.html` con Chrome/Edge, o entrar a la versión publicada en Cloudflare Pages. No necesita internet salvo para las tipografías
 (si no hay conexión usa fuentes del sistema). Los datos se guardan en el navegador con la clave
 `vinedosDeLaVillaDB_v1` (independiente del kiosco original `kioscoDB_v1`).
+
+## Publicación (Cloudflare Pages)
+Repo conectado a Cloudflare Pages: rama `main`, sin comando de build, directorio de salida `public`.
+Solo se publica la carpeta `public/` (las pruebas y el material del video no quedan en la web).
+Cada `git push` a `main` actualiza la página.
+
+## Pruebas
+`~/.venvs/playwright/bin/python -I tests/test_cobro.py`
 
 ## Sectores
 1. **Caja**: escáner, buscador, filtro por sector de la cava (Tintos, Blancos, Destilados…), ticket, cobro y vuelto.

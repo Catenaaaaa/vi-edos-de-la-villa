@@ -4,7 +4,7 @@ Uso: ~/.venvs/playwright/bin/python -I tests/test_cobro.py
 import os, sys, json
 from playwright.sync_api import sync_playwright
 
-URL = 'file://' + os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'index.html'))
+URL = 'file://' + os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'public', 'index.html'))
 OUT = os.environ.get('OUT', '/tmp')
 RES = []
 
@@ -47,6 +47,9 @@ SCAN_JS = '''async (code)=>{
   }
 }'''
 def scan(pg, code):
+    # la app pone el foco en el campo del código 50 ms después de cargar: esperamos a que pase,
+    # como haría un cajero real (si no, la prueba compite con ese foco y falla al azar)
+    pg.wait_for_function("performance.now() > 150")
     pg.evaluate(SCAN_JS, code)
     pg.wait_for_timeout(30)
 
